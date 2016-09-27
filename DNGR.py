@@ -16,7 +16,7 @@ import pdb
 
 
 def read_graph(filename,g_type):
-	with open('data/'+filename,'rb') as f:
+	with open(filename,'rb') as f:
 		if g_type == "undirected":
 			G = nx.read_weighted_edgelist(f)
   		else:
@@ -125,7 +125,7 @@ def process_scripts(args):
 	reprsn = model(data_mat,hidden_layers,hidden_neurons,output_file)
 	data_reprsn = {'embedding':list(reprsn),'node_id':node_idx}
 	df = pd.DataFrame(data_reprsn)
-	df.to_pickle('data/'+output_file+'.pkl')
+	df.to_pickle(output_file+'.pkl')
 
 def main():
   parser = ArgumentParser('DNGR',
