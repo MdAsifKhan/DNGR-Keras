@@ -34,18 +34,18 @@ def cluster(data,true_labels,n_clusters=3):
 
 	return km_means_labels
 
-data_mat = sio.loadmat('data/wine_network.mat')
-labels = sio.loadmat('data/wine_label.mat')
+data_mat = sio.loadmat('wine_network.mat')
+labels = sio.loadmat('wine_label.mat')
 data_mat = data_mat['adjMat']
 labels = labels['wine_label']
 data_edge = nx.Graph(data_mat) 
 
-with open('data/wine.edgelist','wb') as f:
+with open('wine.edgelist','wb') as f:
 	nx.write_weighted_edgelist(data_edge, f)
 
 subprocess.call('~/DNGR-Keras/DNGR.py --graph_type '+'undirected'+' --input '+'wine.edgelist'+' --output '+'representation',shell=True)
 
-df = pd.read_pickle('data/representation.pkl')
+df = pd.read_pickle('representation.pkl')
 reprsn = df['embedding'].values
 node_idx = df['node_id'].values
 reprsn = [np.asarray(row,dtype='float32') for row in reprsn]
