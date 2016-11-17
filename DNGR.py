@@ -16,7 +16,7 @@ import pdb
 
 
 def read_graph(filename,g_type):
-	with open(filename,'rb') as f:
+	with open('data/'+filename,'rb') as f:
 		if g_type == "undirected":
 			G = nx.read_weighted_edgelist(f)
   		else:
@@ -73,13 +73,14 @@ def model(data, hidden_layers, hidden_neurons, output_file, validation_split=0.9
 	val_data = data[train_n:,:]
 
 	input_sh = Input(shape=(data.shape[1],))
-	encoded = Dense(data.shape[1], activation='relu',activity_regularizer=regularizers.activity_l1l2(10e-5,10e-5))(input_sh)
-	encoded = noise.GaussianNoise(0.2)(encoded)
+	encoded = noise.GaussianNoise(0.2)(input_sh)
 	for i in range(hidden_layers):
 		encoded = Dense(hidden_neurons[i], activation='relu',activity_regularizer=regularizers.activity_l1l2(10e-5,10e-5))(encoded)
 		encoded = noise.GaussianNoise(0.2)(encoded)
-	for j in range(hidden_layers-1,-1,-1):
-		decoded = Dense(hidden_neurons[i], activation='relu',activity_regularizer=regularizers.activity_l1l2(10e-5,10e-5))(encoded)
+
+	decoded = Dense(hidden_neurons[-2], activation='relu',activity_regularizer=regularizers.activity_l1l2(10e-5,10e-5))(encoded)
+	for j in range(hidden_layers-3,-1,-1):
+		decoded = Dense(hidden_neurons[j], activation='relu',activity_regularizer=regularizers.activity_l1l2(10e-5,10e-5))(decoded)
 	decoded = Dense(data.shape[1], activation='sigmoid')(decoded)
 
 	autoencoder = Model(input=input_sh, output=decoded)
@@ -100,11 +101,9 @@ def model(data, hidden_layers, hidden_neurons, output_file, validation_split=0.9
 		nb_val_samples=len(val_data),
 		max_q_size=batch_size,
 		callbacks=[checkpointer, earlystopper])
-
 	enco = Model(input=input_sh, output=encoded)
 	enco.compile(optimizer='adadelta', loss='mse')
 	reprsn = enco.predict(data)
-
 	return reprsn
 
 
@@ -125,7 +124,7 @@ def process_scripts(args):
 	reprsn = model(data_mat,hidden_layers,hidden_neurons,output_file)
 	data_reprsn = {'embedding':list(reprsn),'node_id':node_idx}
 	df = pd.DataFrame(data_reprsn)
-	df.to_pickle(output_file+'.pkl')
+	df.to_pickle('data/'+output_file+'.pkl')
 
 def main():
   parser = ArgumentParser('DNGR',
@@ -147,10 +146,10 @@ def main():
   parser.add_argument('--output', required=True,
                       help='Output representation file')
 
-  parser.add_argument('--hidden_layers', default=2, type=int,
+  parser.add_argument('--hidden_layers', default=3, type=int,
                       help='AutoEnocoder Layers')
 
-  parser.add_argument('--neurons_hiddenlayer', default=[128,32], type=list,
+  parser.add_argument('--neurons_hiddenlayer', default=[128,64,32], type=list,
                       help='Number of Neurons AE.')
 
   args = parser.parse_args()
