@@ -75,12 +75,12 @@ def model(data, hidden_layers, hidden_neurons, output_file, validation_split=0.9
 	input_sh = Input(shape=(data.shape[1],))
 	encoded = noise.GaussianNoise(0.2)(input_sh)
 	for i in range(hidden_layers):
-		encoded = Dense(hidden_neurons[i], activation='relu',activity_regularizer=regularizers.activity_l1l2(10e-5,10e-5))(encoded)
+		encoded = Dense(hidden_neurons[i], activation='relu')(encoded)
 		encoded = noise.GaussianNoise(0.2)(encoded)
 
-	decoded = Dense(hidden_neurons[-2], activation='relu',activity_regularizer=regularizers.activity_l1l2(10e-5,10e-5))(encoded)
+	decoded = Dense(hidden_neurons[-2], activation='relu')(encoded)
 	for j in range(hidden_layers-3,-1,-1):
-		decoded = Dense(hidden_neurons[j], activation='relu',activity_regularizer=regularizers.activity_l1l2(10e-5,10e-5))(decoded)
+		decoded = Dense(hidden_neurons[j], activation='relu')(decoded)
 	decoded = Dense(data.shape[1], activation='sigmoid')(decoded)
 
 	autoencoder = Model(input=input_sh, output=decoded)
